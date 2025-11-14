@@ -55,13 +55,10 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh release create ${{ github.ref_name }} `
-          dist/SC_GlobalIni_Extractor.exe `
-          --title "SC Global.ini Extractor ${{ github.ref_name }}" `
-          --notes @- <<'EOF'
+        $notes = @"
         ## SC Global.ini Extractor ${{ github.ref_name }}
 
-        **Download:** `SC_GlobalIni_Extractor.exe` below
+        **Download:** ``SC_GlobalIni_Extractor.exe`` below
 
         ### Features
         - ✅ Auto-detects LIVE, PTU, EPTU, HOTFIX installations
@@ -71,7 +68,7 @@ jobs:
         - ✅ Single EXE - no installation required
 
         ### How to Use
-        1. Download `SC_GlobalIni_Extractor.exe`
+        1. Download ``SC_GlobalIni_Extractor.exe``
         2. Run the EXE
         3. Select your Star Citizen installation
         4. Verify the auto-detected version
@@ -79,14 +76,19 @@ jobs:
         6. Click "Extract global.ini"
 
         ### Output Format
-        Files are saved as: `StockGlobal-{VERSION}-{BRANCH}.ini`
+        Files are saved as: ``StockGlobal-{VERSION}-{BRANCH}.ini``
 
-        Example: `StockGlobal-4-4-0-PTU.ini`
+        Example: ``StockGlobal-4-4-0-PTU.ini``
 
         ---
 
         **Built automatically by GitHub Actions from commit:** ${{ github.sha }}
 
         **Not affiliated with Cloud Imperium Games**
-        EOF
+        "@
+
+        gh release create ${{ github.ref_name }} `
+          dist/SC_GlobalIni_Extractor.exe `
+          --title "SC Global.ini Extractor ${{ github.ref_name }}" `
+          --notes $notes
       shell: pwsh
