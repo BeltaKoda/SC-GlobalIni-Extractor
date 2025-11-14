@@ -1,0 +1,31 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# PyInstaller
+build/
+dist/
+*.spec.swp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# unp4k dependencies (users must download separately)
+unp4k.exe
+*.dll
+x64/
+x86/
+
+# Output files
+stock-global-ini/
+*.ini
+
+# OS
+.DS_Store
+Thumbs.db
