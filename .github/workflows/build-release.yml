@@ -26,7 +26,7 @@ jobs:
     - name: Download unp4k dependencies
       run: |
         # Download unp4k-suite from GitHub releases
-        Invoke-WebRequest -Uri "https://github.com/dolkensp/unp4k/releases/download/v1.3.6/unp4k-suite-v1.3.6.zip" -OutFile "unp4k-suite.zip"
+        Invoke-WebRequest -Uri "https://github.com/dolkensp/unp4k/releases/download/v3.13.66/unp4k-suite-v3.13.66.zip" -OutFile "unp4k-suite.zip"
 
         # Extract to current directory
         Expand-Archive -Path "unp4k-suite.zip" -DestinationPath "." -Force
