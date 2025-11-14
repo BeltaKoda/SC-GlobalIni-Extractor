@@ -568,6 +568,13 @@ class SCExtractorApp(ctk.CTk):
             data_p4k_path = self.selected_installation["path"]
             branch = self.selected_installation["branch"]
 
+            # Suppress console window on Windows
+            startupinfo = None
+            if os.name == 'nt':  # Windows
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
+
             result = subprocess.run(
                 [
                     str(temp_dir / "unp4k.exe"),
@@ -576,7 +583,8 @@ class SCExtractorApp(ctk.CTk):
                 ],
                 cwd=temp_dir,
                 capture_output=True,
-                timeout=300
+                timeout=300,
+                startupinfo=startupinfo
             )
 
             self.after(0, lambda: self.progress_bar.set(0.8))
