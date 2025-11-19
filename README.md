@@ -38,6 +38,23 @@ Download `SC_GlobalIni_Extractor.exe` - No installation required!
 5. Choose where to save the file
 6. Click "Extract global.ini"
 
+### Cloning the Repository (Windows)
+
+If you want to clone this repository to build from source:
+
+**Install Git (if not already installed):**
+```powershell
+winget install --id Git.Git -e --source winget
+```
+
+**Clone the repository:**
+```powershell
+git clone https://github.com/BeltaKoda/SC-GlobalIni-Extractor.git
+cd SC-GlobalIni-Extractor
+```
+
+See the [For Developers](#-for-developers) section for build instructions.
+
 ### Output Files
 
 Extracted files use this naming format: `StockGlobal-{VERSION}-{BRANCH}.ini`
