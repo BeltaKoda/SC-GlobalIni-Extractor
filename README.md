@@ -38,22 +38,15 @@ Download `SC_GlobalIni_Extractor.exe` - No installation required!
 5. Choose where to save the file
 6. Click "Extract global.ini"
 
-### Cloning the Repository (Windows)
+### Download via PowerShell (Windows)
 
-If you want to clone this repository to build from source:
+You can also download the latest release directly using PowerShell:
 
-**Install Git (if not already installed):**
 ```powershell
-winget install --id Git.Git -e --source winget
+Invoke-WebRequest -Uri "https://github.com/BeltaKoda/SC-GlobalIni-Extractor/releases/latest/download/SC_GlobalIni_Extractor.exe" -OutFile "SC_GlobalIni_Extractor.exe"
 ```
 
-**Clone the repository:**
-```powershell
-git clone https://github.com/BeltaKoda/SC-GlobalIni-Extractor.git
-cd SC-GlobalIni-Extractor
-```
-
-See the [For Developers](#-for-developers) section for build instructions.
+This downloads the latest release EXE to your current directory.
 
 ### Output Files
 
