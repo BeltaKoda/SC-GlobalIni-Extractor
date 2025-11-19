@@ -25,8 +25,8 @@ class SCExtractorApp(ctk.CTk):
 
         # Configure window
         self.title("SC Global.ini Extractor")
-        self.geometry("700x750")
-        self.resizable(False, False)
+        self.geometry("900x600")
+        self.resizable(True, True)
 
         # Get resource directory (for bundled files like unp4k.exe)
         if getattr(sys, 'frozen', False):
@@ -43,173 +43,159 @@ class SCExtractorApp(ctk.CTk):
         self.installations = []
         self.selected_installation = None
         self.extracting = False
-        self.output_file = None  # Will be set after UI is built
+        self.output_file = None
+
+        # Configure grid layout (1x2)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
         # Build UI
-        self.create_widgets()
+        self.create_sidebar()
+        self.create_main_area()
 
         # Auto-scan for installations
         self.after(100, self.scan_installations)
 
-    def create_widgets(self):
-        # Title
-        title_label = ctk.CTkLabel(
-            self,
-            text="Star Citizen Global.ini Extractor",
-            font=ctk.CTkFont(size=24, weight="bold")
-        )
-        title_label.pack(pady=(20, 5))
+    def create_sidebar(self):
+        """Create the sidebar with logo and info"""
+        self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
+        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(4, weight=1)
 
-        subtitle_label = ctk.CTkLabel(
-            self,
-            text="Extract vanilla global.ini from your Star Citizen installation",
+        # Title / Logo area
+        self.logo_label = ctk.CTkLabel(
+            self.sidebar_frame, 
+            text="SC Global.ini\nExtractor", 
+            font=ctk.CTkFont(size=20, weight="bold")
+        )
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+
+        # Description
+        self.desc_label = ctk.CTkLabel(
+            self.sidebar_frame,
+            text="Extract the vanilla\nglobal.ini file from\nStar Citizen for\ntranslation or modding.",
             font=ctk.CTkFont(size=12),
-            text_color="gray"
+            text_color="gray70"
         )
-        subtitle_label.pack(pady=(0, 20))
+        self.desc_label.grid(row=1, column=0, padx=20, pady=10)
 
-        # Main container
-        main_frame = ctk.CTkFrame(self)
-        main_frame.pack(padx=20, pady=10, fill="both", expand=True)
+        # Theme switch (optional, keeping it simple for now)
+        # appearance_mode_label = ctk.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
+        # appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
+        # appearance_mode_optionemenu = ctk.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
+        #                                                 command=self.change_appearance_mode_event)
+        # appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
 
-        # Status section
-        self.status_label = ctk.CTkLabel(
-            main_frame,
-            text="Scanning for installations...",
-            font=ctk.CTkFont(size=13)
+        # Footer
+        self.footer_label = ctk.CTkLabel(
+            self.sidebar_frame,
+            text="v1.0.0\n© BeltaKoda",
+            font=ctk.CTkFont(size=10),
+            text_color="gray50"
         )
-        self.status_label.pack(pady=(20, 10))
+        self.footer_label.grid(row=5, column=0, padx=20, pady=20, sticky="s")
 
-        # Installation selection
-        installation_frame = ctk.CTkFrame(main_frame)
-        installation_frame.pack(pady=10, padx=20, fill="x")
+    def create_main_area(self):
+        """Create the main content area"""
+        self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.main_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        
+        # --- Installation Section ---
+        self.inst_frame = ctk.CTkFrame(self.main_frame)
+        self.inst_frame.pack(fill="x", pady=(0, 15))
 
         ctk.CTkLabel(
-            installation_frame,
-            text="Installation:",
-            font=ctk.CTkFont(size=13, weight="bold")
-        ).pack(anchor="w", padx=10, pady=(10, 5))
+            self.inst_frame, 
+            text="1. Select Installation", 
+            font=ctk.CTkFont(size=14, weight="bold")
+        ).pack(anchor="w", padx=15, pady=(10, 5))
 
         self.installation_dropdown = ctk.CTkComboBox(
-            installation_frame,
-            width=600,
+            self.inst_frame,
+            width=400,
             height=35,
-            font=ctk.CTkFont(size=12),
             state="disabled",
             command=self._on_installation_changed
         )
-        self.installation_dropdown.pack(padx=10, pady=(0, 10))
+        self.installation_dropdown.pack(padx=15, pady=(0, 15), fill="x")
 
-        # Version input
-        version_frame = ctk.CTkFrame(main_frame)
-        version_frame.pack(pady=10, padx=20, fill="x")
-
-        ctk.CTkLabel(
-            version_frame,
-            text="Version:",
-            font=ctk.CTkFont(size=13, weight="bold")
-        ).pack(anchor="w", padx=10, pady=(10, 5))
+        # --- Version Section ---
+        self.ver_frame = ctk.CTkFrame(self.main_frame)
+        self.ver_frame.pack(fill="x", pady=(0, 15))
 
         ctk.CTkLabel(
-            version_frame,
-            text="Enter the Star Citizen version (e.g., 4.3.2)",
-            font=ctk.CTkFont(size=11),
-            text_color="gray"
-        ).pack(anchor="w", padx=10)
+            self.ver_frame, 
+            text="2. Verify Version", 
+            font=ctk.CTkFont(size=14, weight="bold")
+        ).pack(anchor="w", padx=15, pady=(10, 5))
 
         self.version_entry = ctk.CTkEntry(
-            version_frame,
-            width=600,
-            height=35,
-            font=ctk.CTkFont(size=12),
-            placeholder_text="e.g., 4.3.2"
+            self.ver_frame,
+            placeholder_text="e.g., 3.24.0",
+            height=35
         )
-        self.version_entry.pack(padx=10, pady=(5, 10))
-        # Bind version entry changes to update filename
+        self.version_entry.pack(padx=15, pady=(0, 15), fill="x")
         self.version_entry.bind("<KeyRelease>", lambda e: self.update_output_filename())
 
-        # Output file selection
-        output_frame = ctk.CTkFrame(main_frame)
-        output_frame.pack(pady=10, padx=20, fill="x")
+        # --- Output Section ---
+        self.out_frame = ctk.CTkFrame(self.main_frame)
+        self.out_frame.pack(fill="x", pady=(0, 15))
 
         ctk.CTkLabel(
-            output_frame,
-            text="Output File:",
-            font=ctk.CTkFont(size=13, weight="bold")
-        ).pack(anchor="w", padx=10, pady=(10, 5))
+            self.out_frame, 
+            text="3. Output Location", 
+            font=ctk.CTkFont(size=14, weight="bold")
+        ).pack(anchor="w", padx=15, pady=(10, 5))
 
-        ctk.CTkLabel(
-            output_frame,
-            text="Full path and filename for the extracted global.ini",
-            font=ctk.CTkFont(size=11),
+        out_inner = ctk.CTkFrame(self.out_frame, fg_color="transparent")
+        out_inner.pack(fill="x", padx=15, pady=(0, 15))
+
+        self.output_entry = ctk.CTkEntry(out_inner, height=35)
+        self.output_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
+
+        self.browse_btn = ctk.CTkButton(
+            out_inner, 
+            text="Browse", 
+            width=100, 
+            height=35,
+            command=self.browse_output_file
+        )
+        self.browse_btn.pack(side="right")
+
+        # --- Action Section ---
+        self.action_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.action_frame.pack(fill="both", expand=True, pady=(10, 0))
+
+        self.status_label = ctk.CTkLabel(
+            self.action_frame, 
+            text="Initializing...", 
             text_color="gray"
-        ).pack(anchor="w", padx=10)
-
-        # Output path container (entry + button)
-        output_path_container = ctk.CTkFrame(output_frame, fg_color="transparent")
-        output_path_container.pack(padx=10, pady=(5, 10), fill="x")
-
-        self.output_entry = ctk.CTkEntry(
-            output_path_container,
-            width=480,
-            height=35,
-            font=ctk.CTkFont(size=11),
         )
-        self.output_entry.pack(side="left", padx=(0, 10))
-        # Initial value will be set after building default filename
+        self.status_label.pack(pady=(0, 10))
 
-        browse_button = ctk.CTkButton(
-            output_path_container,
-            text="Browse...",
-            width=100,
-            height=35,
-            command=self.browse_output_file,
-            font=ctk.CTkFont(size=12)
-        )
-        browse_button.pack(side="left")
-
-        # Progress bar
-        self.progress_bar = ctk.CTkProgressBar(main_frame, width=600)
-        self.progress_bar.pack(pady=20, padx=20)
+        self.progress_bar = ctk.CTkProgressBar(self.action_frame)
+        self.progress_bar.pack(fill="x", pady=(0, 20))
         self.progress_bar.set(0)
 
-        # Progress label
-        self.progress_label = ctk.CTkLabel(
-            main_frame,
-            text="",
-            font=ctk.CTkFont(size=11),
-            text_color="gray"
-        )
-        self.progress_label.pack()
-
-        # Extract button
         self.extract_button = ctk.CTkButton(
-            main_frame,
-            text="Extract global.ini",
+            self.action_frame,
+            text="EXTRACT GLOBAL.INI",
             font=ctk.CTkFont(size=16, weight="bold"),
-            width=300,
             height=50,
-            command=self.start_extraction,
+            fg_color="#2CC985",
+            text_color="white",
+            hover_color="#229e68",
             state="disabled",
-            fg_color="#1f6aa5",
-            hover_color="#144870"
+            command=self.start_extraction
         )
-        self.extract_button.pack(pady=30)
-
-        # Footer
-        footer_label = ctk.CTkLabel(
-            self,
-            text="© BeltaKoda | Not affiliated with Cloud Imperium Games",
-            font=ctk.CTkFont(size=10),
-            text_color="gray"
-        )
-        footer_label.pack(side="bottom", pady=10)
+        self.extract_button.pack(fill="x", side="bottom")
 
     def scan_installations(self):
         """Scan for Star Citizen installations"""
-        self.status_label.configure(text="Scanning for installations...")
-        self.progress_bar.set(0)
-
+        self.status_label.configure(text="Scanning for Star Citizen installations...")
+        self.progress_bar.configure(mode="indeterminate")
+        self.progress_bar.start()
+        
         # Run scan in background thread
         thread = threading.Thread(target=self._scan_thread, daemon=True)
         thread.start()
@@ -217,79 +203,59 @@ class SCExtractorApp(ctk.CTk):
     def _scan_thread(self):
         """Background thread for scanning"""
         installations = self.find_installations()
-
         # Update UI on main thread
         self.after(0, lambda: self._scan_complete(installations))
 
     def detect_version(self, installation_path):
         """Detect Star Citizen version from log files"""
         try:
-            # Get the branch folder (parent of Data.p4k)
             branch_folder = Path(installation_path).parent
-
             # Try Game.log first
             game_log = branch_folder / "Game.log"
             if game_log.exists():
                 version = self._extract_version_from_log(game_log)
-                if version:
-                    return version
+                if version: return version
 
             # Try logbackups folder
             logbackups = branch_folder / "logbackups"
             if logbackups.exists():
-                # Get most recent log file
                 log_files = list(logbackups.glob("Game*.log"))
                 if log_files:
-                    # Sort by modification time, get most recent
                     latest_log = max(log_files, key=lambda p: p.stat().st_mtime)
                     version = self._extract_version_from_log(latest_log)
-                    if version:
-                        return version
-
+                    if version: return version
         except Exception:
             pass
-
         return None
 
     def _extract_version_from_log(self, log_path):
         """Extract version number from log file"""
         try:
             with open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
-                # Read first 200 lines (version info is usually at the start)
                 for _ in range(200):
                     line = f.readline()
-                    if not line:
-                        break
-
-                    # Look for specific Star Citizen version patterns
+                    if not line: break
+                    
                     # Pattern 1: "GameVersion: 4.4.0-PTU.12345"
                     match = re.search(r'GameVersion[:\s]+(\d+\.\d+\.?\d*)', line, re.IGNORECASE)
-                    if match:
-                        return match.group(1)
+                    if match: return match.group(1)
 
                     # Pattern 2: "Version 4.4.0" or "v4.4.0"
                     match = re.search(r'Version\s+v?(\d+\.\d+\.?\d*)', line, re.IGNORECASE)
                     if match:
                         version = match.group(1)
-                        # Must start with 3 or 4 (Star Citizen major versions)
-                        if version.startswith(('3.', '4.')):
-                            return version
+                        if version.startswith(('3.', '4.')): return version
 
                     # Pattern 3: "Star Citizen Alpha 4.4.0"
                     match = re.search(r'Star Citizen Alpha\s+(\d+\.\d+\.?\d*)', line, re.IGNORECASE)
-                    if match:
-                        return match.group(1)
-
+                    if match: return match.group(1)
         except Exception:
             pass
-
         return None
 
     def find_installations(self):
         """Find all Star Citizen installations"""
         installations = []
-
-        # Common root paths
         common_roots = [
             r"C:\Program Files\Roberts Space Industries\StarCitizen",
             r"D:\Program Files\Roberts Space Industries\StarCitizen",
@@ -304,9 +270,7 @@ class SCExtractorApp(ctk.CTk):
             r"E:\RSI\StarCitizen",
             r"F:\RSI\StarCitizen"
         ]
-
-        # Branches to check
-        branches = ["LIVE", "PTU", "EPTU", "HOTFIX"]
+        branches = ["LIVE", "PTU", "EPTU", "HOTFIX", "TECH-PREVIEW"]
 
         for root in common_roots:
             root_path = Path(root)
@@ -314,95 +278,68 @@ class SCExtractorApp(ctk.CTk):
                 for branch in branches:
                     data_p4k = root_path / branch / "Data.p4k"
                     if data_p4k.exists():
-                        # Try to detect version
                         detected_version = self.detect_version(str(data_p4k))
-
                         installations.append({
                             "branch": branch,
                             "path": str(data_p4k),
-                            "display": f"{branch} - {data_p4k}",
+                            "display": f"{branch} ({detected_version if detected_version else 'Unknown Version'})",
                             "version": detected_version
                         })
-
         return installations
 
     def _on_installation_changed(self, selection):
         """Called when installation dropdown selection changes"""
-        # Find the selected installation and auto-fill version if detected
-        selected_index = self.installation_dropdown.cget("values").index(selection)
-        installation = self.installations[selected_index]
-
-        if installation.get("version"):
-            self.version_entry.delete(0, "end")
-            self.version_entry.insert(0, installation["version"])
-
-        # Update output filename with new branch
+        # Find the selected installation
+        # Note: This assumes unique display strings, which is mostly true but could be better
+        for inst in self.installations:
+            if inst["display"] == selection:
+                self.selected_installation = inst
+                if inst.get("version"):
+                    self.version_entry.delete(0, "end")
+                    self.version_entry.insert(0, inst["version"])
+                break
+        
         self.update_output_filename()
 
     def generate_filename(self):
         """Generate filename based on version and branch"""
         version = self.version_entry.get().strip()
-
-        # Get branch from selected installation
-        branch = "LIVE"  # Default
-        if self.installation_dropdown.get():
-            try:
-                selected_index = self.installation_dropdown.cget("values").index(
-                    self.installation_dropdown.get()
-                )
-                branch = self.installations[selected_index]["branch"]
-            except (ValueError, IndexError, KeyError):
-                pass
-
-        # Convert version dots to dashes (4.4.0 -> 4-4-0)
+        branch = "LIVE"
+        if self.selected_installation:
+            branch = self.selected_installation["branch"]
+            
         version_formatted = version.replace(".", "-") if version else "0-0-0"
-
         return f"StockGlobal-{version_formatted}-{branch}.ini"
 
     def update_output_filename(self):
         """Update the output entry with new filename based on current inputs"""
-        # Get current path to preserve directory
         current_path = self.output_entry.get().strip()
-
         if current_path and Path(current_path).parent.exists():
-            # Keep existing directory, update filename
             output_dir = Path(current_path).parent
         else:
-            # Use default directory
             output_dir = self.exe_dir
 
         filename = self.generate_filename()
         new_path = output_dir / filename
-
+        
         self.output_entry.delete(0, "end")
         self.output_entry.insert(0, str(new_path))
         self.output_file = new_path
 
     def browse_output_file(self):
         """Open file save dialog for output location"""
-        # Get suggested filename
         filename = self.generate_filename()
-
-        # Get initial directory from current path
         current_path = self.output_entry.get()
-        if current_path and Path(current_path).parent.exists():
-            initial_dir = str(Path(current_path).parent)
-        else:
-            initial_dir = str(self.exe_dir)
+        initial_dir = str(Path(current_path).parent) if current_path else str(self.exe_dir)
 
-        # Open file save dialog
         selected_file = filedialog.asksaveasfilename(
             title="Save extracted global.ini as",
             initialdir=initial_dir,
             initialfile=filename,
             defaultextension=".ini",
-            filetypes=[
-                ("INI Files", "*.ini"),
-                ("All Files", "*.*")
-            ]
+            filetypes=[("INI Files", "*.ini"), ("All Files", "*.*")]
         )
 
-        # Update entry if user selected a file
         if selected_file:
             self.output_file = Path(selected_file)
             self.output_entry.delete(0, "end")
@@ -410,267 +347,148 @@ class SCExtractorApp(ctk.CTk):
 
     def _scan_complete(self, installations):
         """Called when scan is complete"""
+        self.progress_bar.stop()
+        self.progress_bar.configure(mode="determinate")
+        self.progress_bar.set(0)
+        
         self.installations = installations
 
         if not installations:
-            self.status_label.configure(
-                text="❌ No Star Citizen installations found",
-                text_color="red"
-            )
-            messagebox.showerror(
-                "No Installations Found",
-                "Could not find any Star Citizen installations.\n\n"
-                "Please ensure Star Citizen is installed in a standard location."
-            )
+            self.status_label.configure(text="No Star Citizen installations found", text_color="#FF5555")
+            messagebox.showerror("No Installations", "Could not find any Star Citizen installations.")
             return
 
-        # Update dropdown
-        self.status_label.configure(
-            text=f"✓ Found {len(installations)} installation(s)",
-            text_color="green"
-        )
-
+        self.status_label.configure(text=f"Found {len(installations)} installation(s)", text_color="gray")
+        
         display_values = [inst["display"] for inst in installations]
-        self.installation_dropdown.configure(
-            values=display_values,
-            state="readonly"
-        )
+        self.installation_dropdown.configure(values=display_values, state="readonly")
         self.installation_dropdown.set(display_values[0])
+        
+        # Trigger selection logic for the first item
+        self._on_installation_changed(display_values[0])
+        
         self.extract_button.configure(state="normal")
-
-        # Auto-populate version if detected
-        if installations[0].get("version"):
-            self.version_entry.delete(0, "end")
-            self.version_entry.insert(0, installations[0]["version"])
-
-        # Initialize default output filename
-        self.update_output_filename()
 
     def start_extraction(self):
         """Start the extraction process"""
-        if self.extracting:
-            return
+        if self.extracting: return
 
         # Validate inputs
-        selected_index = self.installation_dropdown.cget("values").index(
-            self.installation_dropdown.get()
-        )
-        self.selected_installation = self.installations[selected_index]
+        if not self.selected_installation:
+            messagebox.showerror("Error", "Please select an installation.")
+            return
 
         version = self.version_entry.get().strip()
         if not version:
-            messagebox.showerror("Version Required", "Please enter a version number")
+            messagebox.showerror("Error", "Please enter a version number.")
             return
 
-        # Basic version validation
-        if not all(c.isdigit() or c == '.' for c in version):
-            messagebox.showerror(
-                "Invalid Version",
-                "Version should be in format X.X.X (e.g., 4.3.2)"
-            )
-            return
-
-        # Validate output file path
         output_path = self.output_entry.get().strip()
         if not output_path:
-            messagebox.showerror(
-                "Output File Required",
-                "Please select an output file location"
-            )
-            return
-
-        try:
-            self.output_file = Path(output_path)
-            # Ensure parent directory exists
-            self.output_file.parent.mkdir(parents=True, exist_ok=True)
-
-            # Validate filename
-            if not self.output_file.suffix:
-                self.output_file = self.output_file.with_suffix(".ini")
-        except Exception as e:
-            messagebox.showerror(
-                "Invalid Output File",
-                f"Cannot use output file path:\n{output_path}\n\nError: {str(e)}"
-            )
+            messagebox.showerror("Error", "Please select an output location.")
             return
 
         # Check for unp4k.exe
         unp4k_path = self.resource_dir / "unp4k.exe"
         if not unp4k_path.exists():
-            messagebox.showerror(
-                "unp4k.exe Not Found",
-                f"Could not find unp4k.exe in:\n{self.resource_dir}\n\n"
-                "This should be bundled with the EXE.\n"
-                "Please rebuild the tool or download unp4k from:\n"
-                "https://github.com/dolkensp/unp4k/releases"
-            )
+            messagebox.showerror("Error", f"unp4k.exe not found in {self.resource_dir}")
             return
 
-        # Disable UI
+        # UI State Update
         self.extracting = True
-        self.extract_button.configure(state="disabled")
+        self.extract_button.configure(state="disabled", text="EXTRACTING...")
         self.installation_dropdown.configure(state="disabled")
         self.version_entry.configure(state="disabled")
         self.output_entry.configure(state="disabled")
         self.progress_bar.set(0)
-        self.progress_label.configure(text="Preparing extraction...")
+        self.status_label.configure(text="Preparing extraction...", text_color="#3B8ED0")
 
-        # Run extraction in background
-        thread = threading.Thread(
-            target=self._extract_thread,
-            args=(version,),
-            daemon=True
-        )
+        # Run in background
+        thread = threading.Thread(target=self._extract_thread, args=(version,), daemon=True)
         thread.start()
 
     def _extract_thread(self, version):
         """Background thread for extraction"""
         try:
-            # Update progress
-            self.after(0, lambda: self.progress_bar.set(0.2))
-            self.after(0, lambda: self.progress_label.configure(
-                text="Setting up temporary directory..."
-            ))
-
+            self.after(0, lambda: self.progress_bar.set(0.1))
+            
             # Create temp directory
             temp_dir = Path(os.environ['TEMP']) / "sc_extract_temp"
-            if temp_dir.exists():
-                shutil.rmtree(temp_dir, ignore_errors=True)
+            if temp_dir.exists(): shutil.rmtree(temp_dir, ignore_errors=True)
             temp_dir.mkdir(parents=True, exist_ok=True)
 
-            # Copy unp4k and dependencies
-            self.after(0, lambda: self.progress_bar.set(0.3))
-            self.after(0, lambda: self.progress_label.configure(
-                text="Copying extraction tools..."
-            ))
-
+            # Copy tools
+            self.after(0, lambda: self.status_label.configure(text="Setting up tools..."))
             shutil.copy2(self.resource_dir / "unp4k.exe", temp_dir / "unp4k.exe")
+            for dll in self.resource_dir.glob("*.dll"):
+                shutil.copy2(dll, temp_dir / dll.name)
+            
+            # Copy arch dirs
+            for arch in ["x64", "x86"]:
+                src = self.resource_dir / arch
+                if src.exists():
+                    dst = temp_dir / arch
+                    if dst.exists(): shutil.rmtree(dst)
+                    shutil.copytree(src, dst)
 
-            # Copy DLL dependencies
-            for dll_file in self.resource_dir.glob("*.dll"):
-                shutil.copy2(dll_file, temp_dir / dll_file.name)
+            self.after(0, lambda: self.progress_bar.set(0.3))
+            self.after(0, lambda: self.status_label.configure(text="Extracting (this may take a minute)..."))
 
-            # Copy x64/x86 directories if they exist
-            for arch_dir in ["x64", "x86"]:
-                arch_source = self.resource_dir / arch_dir
-                if arch_source.exists():
-                    arch_dest = temp_dir / arch_dir
-                    if arch_dest.exists():
-                        shutil.rmtree(arch_dest)
-                    shutil.copytree(arch_source, arch_dest)
-
-            # Run extraction
-            self.after(0, lambda: self.progress_bar.set(0.4))
-            self.after(0, lambda: self.progress_label.configure(
-                text="Extracting global.ini (this may take 1-2 minutes)..."
-            ))
-
-            data_p4k_path = self.selected_installation["path"]
-            branch = self.selected_installation["branch"]
-
-            # Suppress console window on Windows
+            # Run unp4k
             startupinfo = None
-            if os.name == 'nt':  # Windows
+            if os.name == 'nt':
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = subprocess.SW_HIDE
 
             result = subprocess.run(
-                [
-                    str(temp_dir / "unp4k.exe"),
-                    data_p4k_path,
-                    "Data/Localization/english/global.ini"
-                ],
+                [str(temp_dir / "unp4k.exe"), self.selected_installation["path"], "Data/Localization/english/global.ini"],
                 cwd=temp_dir,
                 capture_output=True,
                 timeout=300,
                 startupinfo=startupinfo
             )
 
-            self.after(0, lambda: self.progress_bar.set(0.8))
-
             if result.returncode != 0:
-                raise Exception(f"Extraction failed with exit code {result.returncode}")
+                raise Exception(f"Extraction failed: {result.stderr.decode()}")
 
-            # Find extracted file
-            extracted_files = list(temp_dir.rglob("global.ini"))
-            if not extracted_files:
-                raise Exception("global.ini not found in extracted files")
-
-            extracted_file = extracted_files[0]
-
-            # Save to output file
-            self.after(0, lambda: self.progress_label.configure(
-                text="Saving file..."
-            ))
-
-            # Use user-selected output file path
-            output_path = self.output_file
-
-            shutil.copy2(extracted_file, output_path)
-
-            # Get file size
-            file_size_mb = output_path.stat().st_size / (1024 * 1024)
-
-            # Success!
-            self.after(0, lambda: self.progress_bar.set(1.0))
-            self.after(0, lambda: self._extraction_complete(
-                output_path, file_size_mb
-            ))
-
-        except subprocess.TimeoutExpired:
-            self.after(0, lambda: self._extraction_failed(
-                "Extraction timed out after 5 minutes"
-            ))
-        except Exception as e:
-            self.after(0, lambda: self._extraction_failed(str(e)))
-        finally:
+            self.after(0, lambda: self.progress_bar.set(0.8))
+            
+            # Find and save file
+            extracted = list(temp_dir.rglob("global.ini"))
+            if not extracted: raise Exception("global.ini not found in extracted files")
+            
+            self.after(0, lambda: self.status_label.configure(text="Saving file..."))
+            shutil.copy2(extracted[0], self.output_file)
+            
             # Cleanup
-            if temp_dir.exists():
-                shutil.rmtree(temp_dir, ignore_errors=True)
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            
+            self.after(0, lambda: self._extraction_complete(True))
 
-    def _extraction_complete(self, output_path, file_size_mb):
-        """Called when extraction completes successfully"""
+        except Exception as e:
+            self.after(0, lambda: self._extraction_complete(False, str(e)))
+
+    def _extraction_complete(self, success, error_msg=None):
+        """Called when extraction finishes"""
         self.extracting = False
-        self.extract_button.configure(state="normal")
+        self.extract_button.configure(state="normal", text="EXTRACT GLOBAL.INI")
         self.installation_dropdown.configure(state="readonly")
         self.version_entry.configure(state="normal")
         self.output_entry.configure(state="normal")
-        self.progress_label.configure(
-            text=f"✓ Extraction complete! ({file_size_mb:.2f} MB)",
-            text_color="green"
-        )
 
-        messagebox.showinfo(
-            "Extraction Complete",
-            f"Successfully extracted global.ini!\n\n"
-            f"Saved to:\n{output_path}\n\n"
-            f"File size: {file_size_mb:.2f} MB"
-        )
-
-    def _extraction_failed(self, error_message):
-        """Called when extraction fails"""
-        self.extracting = False
-        self.extract_button.configure(state="normal")
-        self.installation_dropdown.configure(state="readonly")
-        self.version_entry.configure(state="normal")
-        self.output_entry.configure(state="normal")
-        self.progress_bar.set(0)
-        self.progress_label.configure(
-            text="❌ Extraction failed",
-            text_color="red"
-        )
-
-        messagebox.showerror(
-            "Extraction Failed",
-            f"Failed to extract global.ini:\n\n{error_message}"
-        )
-
+        if success:
+            self.progress_bar.set(1.0)
+            self.status_label.configure(text="Extraction Complete!", text_color="#2CC985")
+            messagebox.showinfo("Success", f"File saved to:\n{self.output_file}")
+        else:
+            self.progress_bar.set(0)
+            self.status_label.configure(text="Extraction Failed", text_color="#FF5555")
+            messagebox.showerror("Error", f"Failed:\n{error_msg}")
 
 def main():
     app = SCExtractorApp()
     app.mainloop()
-
 
 if __name__ == "__main__":
     main()
