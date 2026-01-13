@@ -1,0 +1,47 @@
+# UTF-8
+#
+# SC Global.ini Extractor - Version Info Template
+# This file is used by GitHub Actions to generate version_info.txt
+# Placeholders are replaced with actual values from the Git tag
+#
+# For more info see: https://pyinstaller.org/en/stable/usage.html#capturing-windows-version-data
+#
+
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    # Version numbers: MAJOR.MINOR.PATCH.BUILD
+    filevers=({MAJOR}, {MINOR}, {PATCH}, 0),
+    prodvers=({MAJOR}, {MINOR}, {PATCH}, 0),
+    # Contains a bitmask that specifies the valid bits in FILEFLAGS
+    mask=0x3f,
+    # 0x0 = Release build
+    flags=0x0,
+    # 0x40004 = Windows NT
+    OS=0x40004,
+    # 0x1 = Application
+    fileType=0x1,
+    subtype=0x0,
+    # Creation date (not used)
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          u'040904B0',  # 0409 = US English, 04B0 = Unicode
+          [
+            StringStruct(u'CompanyName', u'BeltaKoda'),
+            StringStruct(u'FileDescription', u'SC Global.ini Extractor'),
+            StringStruct(u'FileVersion', u'{VERSION}'),
+            StringStruct(u'InternalName', u'SC_GlobalIni_Extractor'),
+            StringStruct(u'LegalCopyright', u'© BeltaKoda - MIT License'),
+            StringStruct(u'OriginalFilename', u'SC_GlobalIni_Extractor.exe'),
+            StringStruct(u'ProductName', u'SC Global.ini Extractor'),
+            StringStruct(u'ProductVersion', u'{VERSION}'),
+          ]
+        )
+      ]
+    ),
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)

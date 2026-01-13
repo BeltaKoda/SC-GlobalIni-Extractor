@@ -38,6 +38,39 @@ jobs:
         Get-ChildItem -Recurse
       shell: pwsh
 
+    - name: Generate version info from Git tag
+      run: |
+        # Extract version from tag (e.g., v1.2.0 -> 1.2.0)
+        $tag = "${{ github.ref_name }}"
+        Write-Host "Git tag: $tag"
+        
+        # Remove 'v' prefix if present
+        $version = $tag -replace '^v', ''
+        Write-Host "Version: $version"
+        
+        # Parse version components (default to 0 if not present)
+        $parts = $version -split '\.'
+        $major = if ($parts.Length -gt 0) { $parts[0] } else { "0" }
+        $minor = if ($parts.Length -gt 1) { $parts[1] } else { "0" }
+        $patch = if ($parts.Length -gt 2) { $parts[2] } else { "0" }
+        
+        Write-Host "Parsed: Major=$major, Minor=$minor, Patch=$patch"
+        
+        # Read template and replace placeholders
+        $template = Get-Content -Path "version_info.template" -Raw
+        $output = $template `
+          -replace '\{MAJOR\}', $major `
+          -replace '\{MINOR\}', $minor `
+          -replace '\{PATCH\}', $patch `
+          -replace '\{VERSION\}', $version
+        
+        # Write version_info.txt
+        $output | Out-File -FilePath "version_info.txt" -Encoding UTF8
+        
+        Write-Host "Generated version_info.txt:"
+        Get-Content "version_info.txt"
+      shell: pwsh
+
     - name: Build EXE with PyInstaller
       run: |
         pyinstaller extract_tool.spec --clean --noconfirm
