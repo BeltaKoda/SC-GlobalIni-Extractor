@@ -89,7 +89,7 @@ class SCExtractorApp(ctk.CTk):
         # Footer
         self.footer_label = ctk.CTkLabel(
             self.sidebar_frame,
-            text="v1.1.0\n© BeltaKoda",
+            text="v1.2.0\n© BeltaKoda",
             font=ctk.CTkFont(size=10),
             text_color="gray50"
         )
@@ -117,7 +117,37 @@ class SCExtractorApp(ctk.CTk):
             state="disabled",
             command=self._on_installation_changed
         )
-        self.installation_dropdown.pack(padx=15, pady=(0, 15), fill="x")
+        self.installation_dropdown.pack(padx=15, pady=(0, 10), fill="x")
+
+        # Custom path checkbox
+        self.custom_path_var = ctk.BooleanVar(value=False)
+        self.custom_path_checkbox = ctk.CTkCheckBox(
+            self.inst_frame,
+            text="Use custom installation path",
+            variable=self.custom_path_var,
+            command=self._toggle_custom_path
+        )
+        self.custom_path_checkbox.pack(anchor="w", padx=15, pady=(0, 5))
+
+        # Custom path frame (initially hidden)
+        self.custom_path_frame = ctk.CTkFrame(self.inst_frame, fg_color="transparent")
+        # Don't pack yet - will be shown when checkbox is checked
+
+        self.custom_path_entry = ctk.CTkEntry(
+            self.custom_path_frame,
+            placeholder_text="C:\\Path\\To\\StarCitizen",
+            height=35
+        )
+        self.custom_path_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
+
+        self.custom_path_browse_btn = ctk.CTkButton(
+            self.custom_path_frame,
+            text="Browse",
+            width=100,
+            height=35,
+            command=self._browse_custom_path
+        )
+        self.custom_path_browse_btn.pack(side="right")
 
         # --- Version Section ---
         self.ver_frame = ctk.CTkFrame(self.main_frame)
@@ -289,6 +319,70 @@ class SCExtractorApp(ctk.CTk):
                         })
         return installations
 
+    def _toggle_custom_path(self):
+        """Show/hide custom path entry based on checkbox state"""
+        if self.custom_path_var.get():
+            # Show custom path entry, disable dropdown
+            self.custom_path_frame.pack(fill="x", padx=15, pady=(5, 15))
+            self.installation_dropdown.configure(state="disabled")
+        else:
+            # Hide custom path entry, re-enable dropdown
+            self.custom_path_frame.pack_forget()
+            if self.installations:
+                self.installation_dropdown.configure(state="readonly")
+
+    def _browse_custom_path(self):
+        """Open folder picker for custom StarCitizen path"""
+        folder = filedialog.askdirectory(
+            title="Select your StarCitizen folder",
+            mustexist=True
+        )
+        if folder:
+            self.custom_path_entry.delete(0, "end")
+            self.custom_path_entry.insert(0, folder)
+            self._scan_custom_path(folder)
+
+    def _scan_custom_path(self, custom_root):
+        """Scan a custom path for Star Citizen installations"""
+        self.status_label.configure(text="Scanning custom path...", text_color="gray")
+        
+        installations = []
+        root_path = Path(custom_root)
+        branches = ["LIVE", "PTU", "EPTU", "HOTFIX", "TECH-PREVIEW"]
+        
+        for branch in branches:
+            data_p4k = root_path / branch / "Data.p4k"
+            if data_p4k.exists():
+                detected_version = self.detect_version(str(data_p4k))
+                display_text = f"{branch} ({detected_version})" if detected_version else branch
+                installations.append({
+                    "branch": branch,
+                    "path": str(data_p4k),
+                    "display": display_text,
+                    "version": detected_version
+                })
+        
+        if installations:
+            self.installations = installations
+            display_values = [inst["display"] for inst in installations]
+            self.installation_dropdown.configure(values=display_values)
+            self.installation_dropdown.set(display_values[0])
+            self._on_installation_changed(display_values[0])
+            self.extract_button.configure(state="normal")
+            self.status_label.configure(
+                text=f"Found {len(installations)} installation(s) in custom path", 
+                text_color="gray"
+            )
+        else:
+            self.status_label.configure(
+                text="No installations found in selected folder", 
+                text_color="#FF5555"
+            )
+            messagebox.showwarning(
+                "No Installations Found",
+                f"Could not find LIVE, PTU, EPTU, or HOTFIX folders with Data.p4k in:\n\n{custom_root}\n\nMake sure you selected the 'StarCitizen' folder that contains LIVE/PTU subfolders."
+            )
+
     def _on_installation_changed(self, selection):
         """Called when installation dropdown selection changes"""
         # Find the selected installation
@@ -357,7 +451,16 @@ class SCExtractorApp(ctk.CTk):
 
         if not installations:
             self.status_label.configure(text="No Star Citizen installations found", text_color="#FF5555")
-            messagebox.showerror("No Installations", "Could not find any Star Citizen installations.")
+            # Prompt user to browse for custom path
+            result = messagebox.askyesno(
+                "Star Citizen Not Found",
+                "Could not find Star Citizen in the expected locations.\n\n"
+                "Would you like to browse for your StarCitizen installation folder?"
+            )
+            if result:
+                self.custom_path_var.set(True)
+                self._toggle_custom_path()
+                self._browse_custom_path()
             return
 
         self.status_label.configure(text=f"Found {len(installations)} installation(s)", text_color="gray")
