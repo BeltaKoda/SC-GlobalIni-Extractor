@@ -89,7 +89,7 @@ class SCExtractorApp(ctk.CTk):
         # Footer
         self.footer_label = ctk.CTkLabel(
             self.sidebar_frame,
-            text="v1.0.0\n© BeltaKoda",
+            text="v1.1.0\n© BeltaKoda",
             font=ctk.CTkFont(size=10),
             text_color="gray50"
         )
@@ -279,10 +279,12 @@ class SCExtractorApp(ctk.CTk):
                     data_p4k = root_path / branch / "Data.p4k"
                     if data_p4k.exists():
                         detected_version = self.detect_version(str(data_p4k))
+                        # Show version if detected, otherwise just show branch name
+                        display_text = f"{branch} ({detected_version})" if detected_version else branch
                         installations.append({
                             "branch": branch,
                             "path": str(data_p4k),
-                            "display": f"{branch} ({detected_version if detected_version else 'Unknown Version'})",
+                            "display": display_text,
                             "version": detected_version
                         })
         return installations
