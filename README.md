@@ -30,6 +30,25 @@ Download `SC_GlobalIni_Extractor.exe` - No installation required!
 
 ---
 
+## 📸 Screenshots
+
+### Default Appearance
+The application interface upon launch.
+
+![Default Appearance](assets/images/ui-default.png)
+
+### Version Verification
+Auto-detection or manual entry of the game version.
+
+![Version Verification](assets/images/ui-version-verified.png)
+
+### Custom Path Selection
+Option to manually select the Star Citizen installation folder.
+
+![Custom Path Selection](assets/images/ui-custom-path.png)
+
+---
+
 ## 🎮 How to Use
 
 1. Download `SC_GlobalIni_Extractor.exe` from [Releases](https://github.com/BeltaKoda/SC-GlobalIni-Extractor/releases/latest)
