@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'  # Trigger on version tags like v1.0.0
-    branches:
-      - '*'   # Trigger on all branches (for testing)
   workflow_dispatch: # Allow manual trigger
 
 permissions:
@@ -108,19 +106,8 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        $tagName = "${{ github.ref_name }}"
-        $isPrerelease = ""
-        $title = "SC Global.ini Extractor $tagName"
-
-        # Check if this is a branch build
-        if ("${{ github.ref_type }}" -eq "branch") {
-           $tagName = "pre-release-${{ github.ref_name }}"
-           $isPrerelease = "--prerelease"
-           $title = "PRE-RELEASE: SC Global.ini Extractor ($tagName)"
-        }
-
         $notes = @"
-        ## SC Global.ini Extractor $tagName
+        ## SC Global.ini Extractor ${{ github.ref_name }}
 
         **Download:** ``SC_GlobalIni_Extractor.exe`` below
 
@@ -151,16 +138,8 @@ jobs:
         **Not affiliated with Cloud Imperium Games**
         "@
 
-        # If this is a branch build (pre-release), clean up existing release/tag first to allow re-runs
-        if ($isPrerelease) {
-          Write-Host "Cleaning up existing pre-release $tagName..."
-          gh release delete $tagName --yes --cleanup-tag 2>$null || Write-Host "No existing release to delete."
-        }
-
-        # Create release
-        gh release create $tagName `
+        gh release create ${{ github.ref_name }} `
           dist/SC_GlobalIni_Extractor.exe `
-          --title "$title" `
-          --notes $notes `
-          $isPrerelease
+          --title "SC Global.ini Extractor ${{ github.ref_name }}" `
+          --notes $notes
       shell: pwsh
