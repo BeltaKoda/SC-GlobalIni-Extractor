@@ -21,6 +21,7 @@ Download `SC_GlobalIni_Extractor.exe` - No installation required!
 
 - Modern dark-themed GUI
 - Auto-detects LIVE, PTU, EPTU, and HOTFIX installations
+- Supports custom installation paths
 - Auto-detects game version from log files
 - Dynamic filename generation
 - Custom output file picker
@@ -34,6 +35,7 @@ Download `SC_GlobalIni_Extractor.exe` - No installation required!
 1. Download `SC_GlobalIni_Extractor.exe` from [Releases](https://github.com/BeltaKoda/SC-GlobalIni-Extractor/releases/latest)
 2. Run the EXE
 3. Select your Star Citizen installation
+   - *Note: If your installation isn't detected, check "Use custom installation path" and browse to your StarCitizen folder.*
 4. Verify the auto-detected version
 5. Choose where to save the file
 6. Click "Extract global.ini"

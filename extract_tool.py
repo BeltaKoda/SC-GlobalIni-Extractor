@@ -9,6 +9,7 @@ from tkinter import messagebox, filedialog
 import subprocess
 import shutil
 import threading
+import webbrowser
 from pathlib import Path
 import sys
 import os
@@ -79,6 +80,16 @@ class SCExtractorApp(ctk.CTk):
         )
         self.desc_label.grid(row=1, column=0, padx=20, pady=10)
 
+        # Helper/Info
+        self.info_label = ctk.CTkLabel(
+            self.sidebar_frame,
+            text="• Auto-detects version\n• Supports LIVE/PTU\n• Custom paths supported",
+            font=ctk.CTkFont(size=11),
+            text_color="gray60",
+            justify="left"
+        )
+        self.info_label.grid(row=2, column=0, padx=20, pady=10)
+
         # Theme switch (optional, keeping it simple for now)
         # appearance_mode_label = ctk.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         # appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
@@ -88,13 +99,35 @@ class SCExtractorApp(ctk.CTk):
 
         # Footer
         version = self.get_app_version()
+        self.footer_frame = ctk.CTkFrame(self.sidebar_frame, fg_color="transparent")
+        self.footer_frame.grid(row=5, column=0, padx=20, pady=20, sticky="s")
+
+        self.github_button = ctk.CTkButton(
+            self.footer_frame,
+            text="Visit on GitHub",
+            font=ctk.CTkFont(size=11),
+            height=24,
+            width=120,
+            fg_color="transparent",
+            border_width=1,
+            border_color="gray50",
+            text_color="gray80",
+            hover_color=("gray70", "gray30"),
+            command=self.open_github
+        )
+        self.github_button.pack(pady=(0, 10))
+
         self.footer_label = ctk.CTkLabel(
-            self.sidebar_frame,
+            self.footer_frame,
             text=f"v{version}\n© BeltaKoda",
             font=ctk.CTkFont(size=10),
             text_color="gray50"
         )
-        self.footer_label.grid(row=5, column=0, padx=20, pady=20, sticky="s")
+        self.footer_label.pack()
+
+    def open_github(self):
+        """Open GitHub repository in browser"""
+        webbrowser.open("https://github.com/BeltaKoda/SC-GlobalIni-Extractor")
 
     def get_app_version(self):
         """Get application version from bundled file or default"""
