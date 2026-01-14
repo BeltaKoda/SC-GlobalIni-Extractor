@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch: # Allow manual trigger
 
 permissions:
   contents: write  # Required to create releases
@@ -40,22 +41,30 @@ jobs:
 
     - name: Generate version info from Git tag
       run: |
-        # Extract version from tag (e.g., v1.2.0 -> 1.2.0)
-        $tag = "${{ github.ref_name }}"
-        Write-Host "Git tag: $tag"
-        
-        # Remove 'v' prefix if present
-        $version = $tag -replace '^v', ''
-        Write-Host "Version: $version"
-        
-        # Parse version components (default to 0 if not present)
-        $parts = $version -split '\.'
-        $major = if ($parts.Length -gt 0) { $parts[0] } else { "0" }
-        $minor = if ($parts.Length -gt 1) { $parts[1] } else { "0" }
-        $patch = if ($parts.Length -gt 2) { $parts[2] } else { "0" }
-        
-        Write-Host "Parsed: Major=$major, Minor=$minor, Patch=$patch"
-        
+        $refName = "${{ github.ref_name }}"
+        $refType = "${{ github.ref_type }}"
+        Write-Host "Ref: $refName (Type: $refType)"
+
+        # Default fallback for non-tag builds
+        $major = "1"
+        $minor = "2"
+        $patch = "1"
+        $version = "1.2.1-dev-$refName"
+
+        if ($refName -match '^v?(\d+)\.(\d+)\.(\d+)') {
+          # It's a tag or looks like a version
+          $major = $matches[1]
+          $minor = $matches[2]
+          $patch = $matches[3]
+          $version = "$major.$minor.$patch"
+
+          # If it was a tag like v1.2.0, use that exact string for display if needed
+          # But for the file version struct we need integers
+        }
+
+        Write-Host "Version for EXE Info: $major.$minor.$patch.0"
+        Write-Host "Display Version: $version"
+
         # Read template and replace placeholders
         $template = Get-Content -Path "version_info.template" -Raw
         $output = $template `
@@ -67,8 +76,14 @@ jobs:
         # Write version_info.txt
         $output | Out-File -FilePath "version_info.txt" -Encoding UTF8
         
+        # Write version.txt for the app to read at runtime
+        $version | Out-File -FilePath "version.txt" -Encoding UTF8
+
         Write-Host "Generated version_info.txt:"
         Get-Content "version_info.txt"
+
+        Write-Host "Generated version.txt:"
+        Get-Content "version.txt"
       shell: pwsh
 
     - name: Build EXE with PyInstaller

@@ -87,13 +87,25 @@ class SCExtractorApp(ctk.CTk):
         # appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
 
         # Footer
+        version = self.get_app_version()
         self.footer_label = ctk.CTkLabel(
             self.sidebar_frame,
-            text="v1.2.0\n© BeltaKoda",
+            text=f"v{version}\n© BeltaKoda",
             font=ctk.CTkFont(size=10),
             text_color="gray50"
         )
         self.footer_label.grid(row=5, column=0, padx=20, pady=20, sticky="s")
+
+    def get_app_version(self):
+        """Get application version from bundled file or default"""
+        try:
+            version_file = self.resource_dir / "version.txt"
+            if version_file.exists():
+                with open(version_file, "r", encoding="utf-8-sig") as f:
+                    return f.read().strip()
+        except Exception:
+            pass
+        return "DEV"
 
     def create_main_area(self):
         """Create the main content area"""

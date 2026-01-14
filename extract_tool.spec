@@ -8,6 +8,7 @@ added_files = [
     ('unp4k.exe', '.'),
     ('*.dll', '.'),
     ('x64', 'x64'),
+    ('version.txt', '.'),
 ]
 
 # Add x86 folder only if it exists (optional)
