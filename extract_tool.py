@@ -101,7 +101,7 @@ class SCExtractorApp(ctk.CTk):
         try:
             version_file = self.resource_dir / "version.txt"
             if version_file.exists():
-                with open(version_file, "r") as f:
+                with open(version_file, "r", encoding="utf-8-sig") as f:
                     return f.read().strip()
         except Exception:
             pass
