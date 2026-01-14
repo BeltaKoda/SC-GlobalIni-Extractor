@@ -29,3 +29,4 @@ stock-global-ini/
 # OS
 .DS_Store
 Thumbs.db
+version.txt
