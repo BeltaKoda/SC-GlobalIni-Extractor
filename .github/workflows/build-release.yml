@@ -67,8 +67,14 @@ jobs:
         # Write version_info.txt
         $output | Out-File -FilePath "version_info.txt" -Encoding UTF8
         
+        # Write version.txt for the app to read at runtime
+        $version | Out-File -FilePath "version.txt" -Encoding UTF8
+
         Write-Host "Generated version_info.txt:"
         Get-Content "version_info.txt"
+
+        Write-Host "Generated version.txt:"
+        Get-Content "version.txt"
       shell: pwsh
 
     - name: Build EXE with PyInstaller
