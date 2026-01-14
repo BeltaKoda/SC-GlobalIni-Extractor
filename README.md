@@ -38,7 +38,7 @@ The application interface upon launch.
 ![Default Appearance](assets/images/ui-default.png)
 
 ### Version Verification
-Auto-detection or manual entry of the game version.
+The user manually enters the version number found in the launcher.
 
 ![Version Verification](assets/images/ui-version-verified.png)
 
